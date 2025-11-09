@@ -1,73 +1,110 @@
-# Sidebar Progress Bar
+# Progressive
 
-Sidebar Progress Bar is an Obsidian plugin that displays a progress bar in the file explorer sidebar, showing how many tasks have been completed across your notes.
-It supports daily, weekly, monthly, or custom notes and can track either the latest, today’s, or all notes in a folder.
+**Progressive** is an Obsidian plugin that displays a progress bar in the file explorer sidebar, showing how many tasks have been completed across your notes.  
+It supports daily, weekly, monthly, or custom notes and can track either the latest, today’s, or all notes in a folder.  
 The progress bar color dynamically changes based on completion percentage for quick visual feedback.
 
 ---
-## Features
 
-✅ Shows a progress bar in the sidebar, always visible.
+## ⚖️ Difference from *progress-tracker*
 
-📅 Supports daily, weekly, monthly, and custom note types.
+While both *Progressive* and *progress-tracker* help visualize task completion, **Progressive** is a different approach:
 
-🔍 Tracking modes: latest note, today’s note, or all notes in a folder.
+| Feature | Progressive | progress-tracker |
+|----------|--------------|------------------|
+| **Display Location** | Sidebar (always visible in file explorer) | Inside individual notes |
+| **Purpose** | Passive overview of total progress | Per-note task tracking |
+| **Setup** | Automatic, no embedding or commands required | Manual embedding (inline in notes) |
+| **Customization** | Theme-aware, multicolor, black/white modes | Fixed color and layout |
+| **Focus** | Minimalism, zero interaction needed | Detailed tracking inside notes |
 
-🎨 Progress bar color changes through 12 levels depending on completion.
-
-🗂️ Works with both single notes and entire folders.
-
-⚡ Automatically updates when notes are modified.
+In short, **Progressive** gives you *a global visual cue* of how complete your workspace is — without needing to open a single note.
 
 ---
-## Releasing new versions
 
-Update your manifest.json with a new version number.
+## 🧭 Features
 
-Update versions.json with "new-version": "minimum-obsidian-version".
+✅ Shows a progress bar in the **sidebar**, always visible.  
+📅 Supports **daily**, **weekly**, **monthly**, and **custom** note types.  
+🔍 Tracking modes: **latest note**, **today’s note**, or **all notes in a folder**.  
+🎨 Progress bar color changes through 12 levels depending on completion.  
+🗂️ Works with both **single notes and entire folders**.  
+⚡ Automatically updates when notes are modified.  
+🧠 Fully theme-compatible (dark/light/adaptive).  
 
-Create a GitHub Release with manifest.json, main.js, and styles.css.
+---
 
-Example:
+## 🚀 How to use
 
-```
+1. Go to **Settings → Progressive**.  
+2. Choose a note or folder to track.  
+3. Select the note type (**Daily**, **Weekly**, **Monthly**, or **Custom**).  
+4. Choose a tracking mode:
+   - **Latest** → only the most recently modified note  
+   - **Today** → today’s note (or this week/month if selected)  
+   - **All** → all notes inside the selected folder  
+5. The progress bar will appear automatically in your sidebar.
+
+---
+
+## 🧩 Releasing new versions
+
+When preparing a new release for GitHub:
+
+1. Update your **`manifest.json`** with the new version number.  
+2. Update **`versions.json`** with `"new-version": "minimum-obsidian-version"`.  
+3. Create a new **GitHub Release** containing:
+   - `main.js`
+   - `styles.css`
+   - `manifest.json`
+
+Example release process:
+```bash
 npm version patch
 git push --tags
 ```
 
 ---
-## How to use
 
-Go to Settings → Sidebar Progress Bar.
+## 📦 Manual installation
 
-Choose a note or folder to track.
+To install manually, copy the following files into your vault:
 
-Select the note type (Daily, Weekly, Monthly, Custom).
+```
+VaultFolder/.obsidian/plugins/progressive/
+```
 
-Choose a tracking mode:
+Files required:
+```
+main.js
+styles.css
+manifest.json
+```
 
-Latest → only the most recent note.
-
-Today → today’s note (or this week/month if selected).
-
-All → all notes inside the folder.
-
-The progress bar will appear in your sidebar automatically.
-
----
-## Manually installing the plugin
-
-Copy main.js, styles.css, and manifest.json to:
-
-VaultFolder/.obsidian/plugins/sidebar-progress-bar/
-
-Reload Obsidian and enable the plugin.
-## Funding
-
-If you like this plugin, you can support its development by giving feedback.
+Then reload Obsidian and enable **Progressive** from the Community Plugins tab.
 
 ---
-## API Documentation
 
-See the official Obsidian API docs here:
-👉 https://github.com/obsidianmd/obsidian-api
+## ❤️ Funding & Feedback
+
+If you like **Progressive**, you can support its development by:
+- Giving feedback on GitHub  
+- Reporting bugs or feature requests  
+- Sharing it with others in the Obsidian community
+
+---
+
+## 🧠 Developer & API Notes
+
+- Developed in **TypeScript** for clean structure and better type safety.  
+- All styles are now externalized into `styles.css` for theme compatibility.  
+- Uses `registerInterval` to handle periodic updates safely.  
+- Uses `Vault.cachedRead()` for efficient file access.  
+
+---
+
+## 📚 Documentation
+
+For the latest Progressive documentation and updates, visit:  
+👉 [https://github.com/kelen-argosi/progressive](https://github.com/kelen-argosi/progressive)
+

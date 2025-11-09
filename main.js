@@ -29,90 +29,87 @@ function __awaiter(thisArg, _arguments, P, generator) {
     });
 }
 
+// --- Support alternative checkbox syntaxes ---
+const UNCHECKED_REGEX = /-\s*\[(?: |☐|❍|■|–|>|•|\*)?\]/gi;
+const CHECKED_REGEX = /-\s*\[(?:x|X|✔|✓|🗹|☑|⊠|✅)?\]/gi;
 const DEFAULT_SETTINGS = {
-    notePath: '',
-    noteType: 'daily',
-    trackMode: 'latest',
-    colorMode: 'theme'
+    notePath: "",
+    noteType: "daily",
+    trackMode: "latest",
+    colorMode: "theme",
 };
-// Main Plugin Class
-class SidebarProgressBar extends obsidian.Plugin {
+// --- Main Plugin Class ---
+class ProgressivePlugin extends obsidian.Plugin {
     constructor() {
         super(...arguments);
-        this.sidebarProgressBarContainer = null;
-        this.cssEl = null;
+        this.progressBarContainer = null;
+        this.progressBarFill = null;
+        this.progressPercentLabel = null;
+        this.updateTimer = null;
+        this.styleEl = null;
     }
     onload() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.addSettingTab(new SidebarProgressBarSettingTab(this.app, this));
+            // --- Load plugin styles ---
+            this.styleEl = document.createElement("link");
+            this.styleEl.rel = "stylesheet";
+            this.styleEl.type = "text/css";
+            this.styleEl.href = this.app.vault.adapter.getResourcePath(this.manifest.dir + "/styles.css");
+            document.head.appendChild(this.styleEl);
+            // --- Load settings and add settings tab ---
             yield this.loadSettings();
-            // Wait for workspace to load
+            this.addSettingTab(new ProgressiveSettingTab(this.app, this));
             this.app.workspace.onLayoutReady(() => __awaiter(this, void 0, void 0, function* () {
-                const leftLeaves = this.app.workspace.getLeavesOfType('file-explorer');
-                if (!leftLeaves.length)
+                const fileExplorerLeaves = this.app.workspace.getLeavesOfType("file-explorer");
+                if (!fileExplorerLeaves.length)
                     return;
-                const leaf = leftLeaves[0];
-                const fileExplorerContainer = leaf.view.containerEl;
-                // Create sidebar progress bar container
-                const sidebarProgressBarContainer = document.createElement('div');
-                sidebarProgressBarContainer.id = 'sidebar-progress-bar-container';
-                sidebarProgressBarContainer.style.display = 'flex';
-                sidebarProgressBarContainer.style.alignItems = 'center';
-                sidebarProgressBarContainer.style.justifyContent = 'flex-start';
-                sidebarProgressBarContainer.style.height = '24px';
-                sidebarProgressBarContainer.style.width = '100%';
-                sidebarProgressBarContainer.style.marginTop = '8px';
-                sidebarProgressBarContainer.style.padding = '0 6px';
-                sidebarProgressBarContainer.style.backgroundColor = 'var(--background-secondary)';
-                // Progress bar wrapper (for border)
-                const sidebarProgressBarWrapper = document.createElement('div');
-                sidebarProgressBarWrapper.style.height = '10px';
-                sidebarProgressBarWrapper.style.width = '100%';
-                sidebarProgressBarWrapper.style.backgroundColor = 'var(--background-secondary)';
-                sidebarProgressBarWrapper.style.border = '1px solid var(--text-normal)';
-                sidebarProgressBarWrapper.style.borderRadius = '4px';
-                sidebarProgressBarWrapper.style.overflow = 'hidden';
-                sidebarProgressBarWrapper.style.position = 'relative';
-                // Progress bar itself
-                const sidebarProgressBarFill = document.createElement('div');
-                sidebarProgressBarFill.id = 'sidebar-progress-bar';
-                sidebarProgressBarFill.style.height = '100%';
-                sidebarProgressBarFill.style.width = '0%';
-                sidebarProgressBarFill.style.backgroundColor = '#29a329';
-                sidebarProgressBarFill.style.borderRadius = '4px 0 0 4px';
-                sidebarProgressBarFill.style.transition = 'width 0.2s ease';
-                // Percentage label
-                const sidebarProgressBarPercentLabel = document.createElement('span');
-                sidebarProgressBarPercentLabel.id = 'sidebar-progress-bar-percent';
-                sidebarProgressBarPercentLabel.style.color = 'var(--text-normal)';
-                sidebarProgressBarPercentLabel.style.fontSize = '12px';
-                sidebarProgressBarPercentLabel.style.marginRight = '6px';
-                sidebarProgressBarPercentLabel.textContent = '0%';
-                sidebarProgressBarContainer.appendChild(sidebarProgressBarPercentLabel);
-                sidebarProgressBarWrapper.appendChild(sidebarProgressBarFill);
-                sidebarProgressBarContainer.appendChild(sidebarProgressBarWrapper);
-                fileExplorerContainer.appendChild(sidebarProgressBarContainer);
+                const leaf = fileExplorerLeaves[0];
+                const container = leaf.view.containerEl;
+                // --- Create progress bar container ---
+                this.progressBarContainer = document.createElement("div");
+                this.progressBarContainer.className = "progressive-container";
+                // --- Label ---
+                this.progressPercentLabel = document.createElement("span");
+                this.progressPercentLabel.className = "progressive-percent";
+                this.progressPercentLabel.textContent = "0%";
+                // --- Wrapper ---
+                const wrapper = document.createElement("div");
+                wrapper.className = "progressive-wrapper";
+                // --- Fill ---
+                this.progressBarFill = document.createElement("div");
+                this.progressBarFill.className = "progressive-bar";
+                this.progressBarFill.style.width = "0%";
+                wrapper.appendChild(this.progressBarFill);
+                this.progressBarContainer.appendChild(this.progressPercentLabel);
+                this.progressBarContainer.appendChild(wrapper);
+                container.appendChild(this.progressBarContainer);
+                // --- Initial Update ---
                 yield this.updateProgressBar();
-                // Watch for file changes
-                this.registerEvent(this.app.vault.on('modify', (file) => __awaiter(this, void 0, void 0, function* () {
-                    if (!this.settings.notePath)
-                        return;
-                    const trackedPath = this.settings.notePath;
-                    if (file.path === trackedPath || file.path.startsWith(trackedPath + '/')) {
-                        yield this.updateProgressBar();
-                    }
-                })));
-                // Optional: refresh periodically for folder tracking
-                setInterval(() => __awaiter(this, void 0, void 0, function* () {
-                    yield this.updateProgressBar();
-                }), 2000);
+                // --- File system event listeners ---
+                this.registerEvent(this.app.vault.on("modify", () => this.debouncedUpdate()));
+                this.registerEvent(this.app.vault.on("create", () => this.debouncedUpdate()));
+                this.registerEvent(this.app.vault.on("delete", () => this.debouncedUpdate()));
+                this.registerEvent(this.app.vault.on("rename", () => this.debouncedUpdate()));
+                // --- Periodic update for folders ---
+                this.registerInterval(window.setInterval(() => this.updateProgressBar(), 10000));
             }));
         });
     }
     onunload() {
-        const sidebarProgressBarContainer = document.querySelector('#sidebar-progress-bar-container');
-        if (sidebarProgressBarContainer)
-            sidebarProgressBarContainer.remove();
+        if (this.progressBarContainer)
+            this.progressBarContainer.remove();
+        if (this.updateTimer)
+            window.clearTimeout(this.updateTimer);
+        // Clean up stylesheet
+        if (this.styleEl && this.styleEl.parentNode) {
+            this.styleEl.parentNode.removeChild(this.styleEl);
+            this.styleEl = null;
+        }
+    }
+    debouncedUpdate() {
+        if (this.updateTimer)
+            window.clearTimeout(this.updateTimer);
+        this.updateTimer = window.setTimeout(() => this.updateProgressBar(), 1000);
     }
     updateProgressBar() {
         var _a, _b;
@@ -120,100 +117,86 @@ class SidebarProgressBar extends obsidian.Plugin {
             if (!this.settings.notePath)
                 return;
             let filesToCheck = [];
-            const abstractFile = this.app.vault.getAbstractFileByPath(this.settings.notePath);
-            if (abstractFile instanceof obsidian.TFile) {
-                filesToCheck = [abstractFile];
+            const target = this.app.vault.getAbstractFileByPath(this.settings.notePath);
+            if (target instanceof obsidian.TFile) {
+                filesToCheck = [target];
             }
-            else if (abstractFile instanceof obsidian.TFolder) {
-                filesToCheck = this.app.vault.getMarkdownFiles().filter(f => f.path.startsWith(this.settings.notePath + '/'));
+            else if (target instanceof obsidian.TFolder) {
+                filesToCheck = this.app.vault
+                    .getMarkdownFiles()
+                    .filter((f) => f.path.startsWith(this.settings.notePath + "/"));
             }
             else {
-                filesToCheck = this.app.vault.getMarkdownFiles().filter(f => f.path.startsWith(this.settings.notePath));
+                filesToCheck = this.app.vault
+                    .getMarkdownFiles()
+                    .filter((f) => f.path.startsWith(this.settings.notePath));
             }
             if (!filesToCheck.length)
                 return;
             const now = new Date();
-            if (this.settings.trackMode === 'latest') {
+            // --- Filter based on tracking mode ---
+            if (this.settings.trackMode === "latest") {
                 filesToCheck.sort((a, b) => b.stat.mtime - a.stat.mtime);
                 filesToCheck = [filesToCheck[0]];
             }
-            else if (this.settings.trackMode === 'today' && !(abstractFile instanceof obsidian.TFile)) {
-                if (this.settings.noteType === 'daily') {
-                    const todayStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-                    filesToCheck = filesToCheck.filter(f => f.basename.includes(todayStr));
+            else if (this.settings.trackMode === "today" && !(target instanceof obsidian.TFile)) {
+                if (this.settings.noteType === "daily") {
+                    const todayStr = `${String(now.getDate()).padStart(2, "0")}-${String(now.getMonth() + 1).padStart(2, "0")}-${now.getFullYear()}`;
+                    filesToCheck = filesToCheck.filter((f) => f.basename.includes(todayStr));
                 }
-                else if (this.settings.noteType === 'weekly') {
+                else if (this.settings.noteType === "weekly") {
                     const getISOWeek = (date) => {
-                        const tempDate = new Date(date.getTime());
-                        tempDate.setHours(0, 0, 0, 0);
-                        tempDate.setDate(tempDate.getDate() + 4 - (tempDate.getDay() || 7));
-                        const yearStart = new Date(tempDate.getFullYear(), 0, 1);
-                        return Math.ceil((((tempDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+                        const temp = new Date(date.getTime());
+                        temp.setHours(0, 0, 0, 0);
+                        temp.setDate(temp.getDate() + 4 - (temp.getDay() || 7));
+                        const yearStart = new Date(temp.getFullYear(), 0, 1);
+                        return Math.ceil(((temp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
                     };
                     const weekStr = `W${getISOWeek(now)}-${now.getFullYear()}`;
-                    filesToCheck = filesToCheck.filter(f => f.basename.includes(weekStr));
+                    filesToCheck = filesToCheck.filter((f) => f.basename.includes(weekStr));
                 }
-                else if (this.settings.noteType === 'monthly') {
-                    const monthStr = `${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
-                    filesToCheck = filesToCheck.filter(f => f.basename.includes(monthStr));
+                else if (this.settings.noteType === "monthly") {
+                    const monthStr = `${String(now.getMonth() + 1).padStart(2, "0")}-${now.getFullYear()}`;
+                    filesToCheck = filesToCheck.filter((f) => f.basename.includes(monthStr));
                 }
             }
-            try {
-                let totalTasks = 0;
-                let doneTasks = 0;
-                for (const f of filesToCheck) {
-                    const content = yield this.app.vault.read(f);
-                    totalTasks += ((_a = content.match(/- \[ \]/g)) === null || _a === void 0 ? void 0 : _a.length) || 0;
-                    doneTasks += ((_b = content.match(/- \[x\]/gi)) === null || _b === void 0 ? void 0 : _b.length) || 0;
-                }
-                const percent = totalTasks + doneTasks > 0
-                    ? Math.round((doneTasks / (totalTasks + doneTasks)) * 100)
-                    : 0;
-                const sidebarProgressBarFill = document.getElementById('sidebar-progress-bar');
-                const sidebarProgressBarPercentLabel = document.getElementById('sidebar-progress-bar-percent');
-                if (sidebarProgressBarFill) {
-                    sidebarProgressBarFill.style.width = `${percent}%`;
-                    if (this.settings.colorMode === 'multicolor') {
-                        if (percent <= 8.33)
-                            sidebarProgressBarFill.style.backgroundColor = '#ff0000';
-                        else if (percent <= 16.66)
-                            sidebarProgressBarFill.style.backgroundColor = '#ff3300';
-                        else if (percent <= 25)
-                            sidebarProgressBarFill.style.backgroundColor = '#ff6600';
-                        else if (percent <= 33.33)
-                            sidebarProgressBarFill.style.backgroundColor = '#ff9900';
-                        else if (percent <= 41.66)
-                            sidebarProgressBarFill.style.backgroundColor = '#ffcc00';
-                        else if (percent <= 50)
-                            sidebarProgressBarFill.style.backgroundColor = '#ffff00';
-                        else if (percent <= 58.33)
-                            sidebarProgressBarFill.style.backgroundColor = '#c1e703ff';
-                        else if (percent <= 66.66)
-                            sidebarProgressBarFill.style.backgroundColor = '#a7e400ff';
-                        else if (percent <= 75)
-                            sidebarProgressBarFill.style.backgroundColor = '#84e103ff';
-                        else if (percent <= 83.33)
-                            sidebarProgressBarFill.style.backgroundColor = '#57cd02ff';
-                        else if (percent <= 91.66)
-                            sidebarProgressBarFill.style.backgroundColor = '#00be09ff';
-                        else
-                            sidebarProgressBarFill.style.backgroundColor = '#01a80cff';
-                    }
-                    else if (this.settings.colorMode === 'bw') {
-                        const isDark = document.body.classList.contains('theme-dark');
-                        sidebarProgressBarFill.style.backgroundColor = isDark ? 'white' : 'black';
-                    }
-                    else {
-                        sidebarProgressBarFill.style.backgroundColor = 'var(--interactive-accent)';
-                    }
-                }
-                if (sidebarProgressBarPercentLabel)
-                    sidebarProgressBarPercentLabel.textContent = `${percent}%`;
+            // --- Compute progress ---
+            let totalTasks = 0;
+            let doneTasks = 0;
+            for (const f of filesToCheck) {
+                const content = yield this.app.vault.cachedRead(f);
+                const uncheckedMatches = ((_a = content.match(UNCHECKED_REGEX)) === null || _a === void 0 ? void 0 : _a.length) || 0;
+                const checkedMatches = ((_b = content.match(CHECKED_REGEX)) === null || _b === void 0 ? void 0 : _b.length) || 0;
+                totalTasks += uncheckedMatches;
+                doneTasks += checkedMatches;
             }
-            catch (e) {
-                console.error("Sidebar Progress Bar: failed to read files", e);
-            }
+            const percent = totalTasks + doneTasks > 0
+                ? Math.round((doneTasks / (totalTasks + doneTasks)) * 100)
+                : 0;
+            this.updateBarUI(percent);
         });
+    }
+    updateBarUI(percent) {
+        if (!this.progressBarFill || !this.progressPercentLabel)
+            return;
+        this.progressBarFill.style.width = `${percent}%`;
+        this.progressPercentLabel.textContent = `${percent}%`;
+        if (this.settings.colorMode === "multicolor") {
+            const colors = [
+                "#ff0000", "#ff3300", "#ff6600", "#ff9900",
+                "#ffcc00", "#ffff00", "#c1e703", "#a7e400",
+                "#84e103", "#57cd02", "#00be09", "#01a80c",
+            ];
+            const index = Math.min(colors.length - 1, Math.floor((percent / 100) * colors.length));
+            this.progressBarFill.style.backgroundColor = colors[index];
+        }
+        else if (this.settings.colorMode === "bw") {
+            const isDark = document.body.classList.contains("theme-dark");
+            this.progressBarFill.style.backgroundColor = isDark ? "white" : "black";
+        }
+        else {
+            this.progressBarFill.style.backgroundColor = "var(--interactive-accent)";
+        }
     }
     loadSettings() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -223,11 +206,12 @@ class SidebarProgressBar extends obsidian.Plugin {
     saveSettings() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.saveData(this.settings);
+            yield this.updateProgressBar();
         });
     }
 }
-// Settings Tab
-class SidebarProgressBarSettingTab extends obsidian.PluginSettingTab {
+// --- Settings Tab ---
+class ProgressiveSettingTab extends obsidian.PluginSettingTab {
     constructor(app, plugin) {
         super(app, plugin);
         this.plugin = plugin;
@@ -236,58 +220,54 @@ class SidebarProgressBarSettingTab extends obsidian.PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
         new obsidian.Setting(containerEl)
-            .setName('Track Note / Folder')
-            .setDesc('Choose the note or folder to track')
-            .addText(text => {
-            text.setPlaceholder('Start typing note/folder name')
-                .setValue(this.plugin.settings.notePath)
-                .onChange((value) => __awaiter(this, void 0, void 0, function* () {
-                this.plugin.settings.notePath = value;
-                yield this.plugin.saveSettings();
-            }));
-        });
+            .setName("Track Note / Folder")
+            .setDesc("Choose the note or folder to track")
+            .addText((text) => text
+            .setPlaceholder("path/to/note/or/folder")
+            .setValue(this.plugin.settings.notePath)
+            .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+            this.plugin.settings.notePath = value;
+            yield this.plugin.saveSettings();
+        })));
         new obsidian.Setting(containerEl)
-            .setName('Note Type')
-            .setDesc('Daily, Weekly, Monthly, or Custom note')
-            .addDropdown(dropdown => dropdown
-            .addOption('daily', 'Daily')
-            .addOption('weekly', 'Weekly')
-            .addOption('monthly', 'Monthly')
-            .addOption('custom', 'Custom Note')
+            .setName("Note Type")
+            .setDesc("Choose the note type to track")
+            .addDropdown((dropdown) => dropdown
+            .addOption("daily", "Daily")
+            .addOption("weekly", "Weekly")
+            .addOption("monthly", "Monthly")
+            .addOption("custom", "Custom")
             .setValue(this.plugin.settings.noteType)
             .onChange((value) => __awaiter(this, void 0, void 0, function* () {
             this.plugin.settings.noteType = value;
             yield this.plugin.saveSettings();
         })));
         new obsidian.Setting(containerEl)
-            .setName('Tracking Mode')
-            .setDesc('Choose which notes to track')
-            .addDropdown(dropdown => dropdown
-            .addOption('latest', 'Latest note only')
-            .addOption('today', 'Today\'s note only')
-            .addOption('all', 'All notes in folder')
+            .setName("Tracking Mode")
+            .setDesc("Which notes to include in progress")
+            .addDropdown((dropdown) => dropdown
+            .addOption("latest", "Latest note only")
+            .addOption("today", "Today’s note only")
+            .addOption("all", "All notes in folder")
             .setValue(this.plugin.settings.trackMode)
             .onChange((value) => __awaiter(this, void 0, void 0, function* () {
             this.plugin.settings.trackMode = value;
             yield this.plugin.saveSettings();
-            yield this.plugin.updateProgressBar();
         })));
         new obsidian.Setting(containerEl)
-            .setName('Progress Bar Color Mode')
-            .setDesc('Choose how the progress bar is colored')
-            .addDropdown(dropdown => dropdown
-            .addOption('theme', 'Theme accent color')
-            .addOption('multicolor', 'Multicolor scale')
-            .addOption('bw', 'Black/White (based on theme)')
+            .setName("Progress Bar Color Mode")
+            .setDesc("Choose the color behavior of the progress bar")
+            .addDropdown((dropdown) => dropdown
+            .addOption("theme", "Theme accent color")
+            .addOption("multicolor", "Multicolor scale")
+            .addOption("bw", "Black/White (theme-based)")
             .setValue(this.plugin.settings.colorMode)
             .onChange((value) => __awaiter(this, void 0, void 0, function* () {
             this.plugin.settings.colorMode = value;
             yield this.plugin.saveSettings();
-            yield this.plugin.updateProgressBar();
         })));
     }
-
 }
 
-module.exports = SidebarProgressBar;
-//# sourceMappingURL=main.js.map 
+module.exports = ProgressivePlugin;
+//# sourceMappingURL=main.js.map
