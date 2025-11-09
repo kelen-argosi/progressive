@@ -47,25 +47,6 @@ In short, **Progressive** gives you *a global visual cue* of how complete your w
 
 ---
 
-## 🧩 Releasing new versions
-
-When preparing a new release for GitHub:
-
-1. Update your **`manifest.json`** with the new version number.  
-2. Update **`versions.json`** with `"new-version": "minimum-obsidian-version"`.  
-3. Create a new **GitHub Release** containing:
-   - `main.js`
-   - `styles.css`
-   - `manifest.json`
-
-Example release process:
-```bash
-npm version patch
-git push --tags
-```
-
----
-
 ## 📦 Manual installation
 
 To install manually, copy the following files into your vault:
@@ -91,12 +72,13 @@ If you like **Progressive**, you can support its development by:
 - Giving feedback on GitHub  
 - Reporting bugs or feature requests  
 - Sharing it with others in the Obsidian community
+- Funding : If you really want to donate, give money to a charity
 
 ---
 
 ## 🧠 Developer & API Notes
 
-- Developed in **TypeScript** for clean structure and better type safety.  
+- Developed in **TypeScript**
 - All styles are now externalized into `styles.css` for theme compatibility.  
 - Uses `registerInterval` to handle periodic updates safely.  
 - Uses `Vault.cachedRead()` for efficient file access.  
