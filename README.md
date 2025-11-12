@@ -1,6 +1,6 @@
 # Progressive
 
-**Progressive** is an Obsidian plugin that displays a progress bar in the file explorer sidebar, showing how many tasks have been completed across your notes.  
+**Progressive** is an Obsidian plugin that displays a progress bar in the file explorer sidebar, showing the percentage of tasks that have been completed across your notes.  
 It supports daily, weekly, monthly, or custom notes and can track either the latest, today’s, or all notes in a folder.  
 The progress bar color dynamically changes based on completion percentage for quick visual feedback.
 
@@ -26,11 +26,10 @@ In short, **Progressive** gives you *a global visual cue* of how complete your w
 
 ✅ Shows a progress bar in the **sidebar**, always visible.  
 📅 Supports **daily**, **weekly**, **monthly**, and **custom** note types.  
-🔍 Tracking modes: **latest note**, **today’s note**, or **all notes in a folder**.  
-🎨 Progress bar color changes through 12 levels depending on completion.  
+🔍 Tracking modes: **latest note**, **today’s note**, **all notes in a folder** or a **custom note**.
+🎨 Progress bar color changes through 12 levels depending on completion, but also features Black and White and themed based visuals.
 🗂️ Works with both **single notes and entire folders**.  
 ⚡ Automatically updates when notes are modified.  
-🧠 Fully theme-compatible (dark/light/adaptive).  
 
 ---
 
@@ -73,15 +72,6 @@ If you like **Progressive**, you can support its development by:
 - Reporting bugs or feature requests  
 - Sharing it with others in the Obsidian community
 - Funding : If you really want to donate, give money to a charity
-
----
-
-## 🧠 Developer & API Notes
-
-- Developed in **TypeScript**
-- All styles are now externalized into `styles.css` for theme compatibility.  
-- Uses `registerInterval` to handle periodic updates safely.  
-- Uses `Vault.cachedRead()` for efficient file access.  
 
 ---
 
