@@ -33,17 +33,8 @@ export default class ProgressivePlugin extends Plugin {
 	private progressBarFill: HTMLDivElement | null = null;
 	private progressPercentLabel: HTMLSpanElement | null = null;
 	private updateTimer: number | null = null;
-	private styleEl: HTMLLinkElement | null = null;
 
 	async onload() {
-		// --- Load plugin styles ---
-		this.styleEl = document.createElement("link");
-		this.styleEl.rel = "stylesheet";
-		this.styleEl.type = "text/css";
-		this.styleEl.href = this.app.vault.adapter.getResourcePath(
-			this.manifest.dir + "/styles.css"
-		);
-		document.head.appendChild(this.styleEl);
 
 		// --- Load settings and add settings tab ---
 		await this.loadSettings();
@@ -99,11 +90,6 @@ export default class ProgressivePlugin extends Plugin {
 		if (this.progressBarContainer) this.progressBarContainer.remove();
 		if (this.updateTimer) window.clearTimeout(this.updateTimer);
 
-		// Clean up stylesheet
-		if (this.styleEl && this.styleEl.parentNode) {
-			this.styleEl.parentNode.removeChild(this.styleEl);
-			this.styleEl = null;
-		}
 	}
 
 	private debouncedUpdate() {
@@ -227,7 +213,7 @@ class ProgressiveSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Track Note / Folder")
+			.setName("Track Note or Folder")
 			.setDesc("Choose the note or folder to track")
 			.addText((text) =>
 				text
@@ -240,7 +226,7 @@ class ProgressiveSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Note Type")
+			.setName("Note type")
 			.setDesc("Choose the note type to track")
 			.addDropdown((dropdown) =>
 				dropdown
@@ -256,7 +242,7 @@ class ProgressiveSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Tracking Mode")
+			.setName("Tracking mode")
 			.setDesc("Which notes to include in progress")
 			.addDropdown((dropdown) =>
 				dropdown
@@ -271,7 +257,7 @@ class ProgressiveSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Progress Bar Color Mode")
+			.setName("Progress bar color mode")
 			.setDesc("Choose the color behavior of the progress bar")
 			.addDropdown((dropdown) =>
 				dropdown
