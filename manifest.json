@@ -5,7 +5,7 @@
   "minAppVersion": "0.15.0",
   "description": "Sidebar progress bar that tracks tasks across notes (daily, weekly, monthly, or custom). Supports multiple color modes and adapts to your theme.",
   "author": "kelen-argosi",
-  "authorUrl": "https://github.com/kelen-argosi/obsidian-progressive",
   "isDesktopOnly": false
 }
+
 
