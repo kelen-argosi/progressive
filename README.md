@@ -18,7 +18,7 @@ While both *Progressive* and *progress-tracker* help visualize task completion, 
 | **Customization** | Theme-aware, multicolor, black/white modes | Fixed color and layout |
 | **Focus** | Minimalism, zero interaction needed | Detailed tracking inside notes |
 
-In short, **Progressive** gives you *a global visual cue* of how complete your workspace is — without needing to open a single note.
+In short, **Progressive** gives you *a global visual cue* of how complete your workspace is without needing to open a single note.
 
 ---
 
@@ -36,12 +36,12 @@ In short, **Progressive** gives you *a global visual cue* of how complete your w
 ## How to use
 
 1. Go to **Settings → Progressive**.  
-2. Choose a note or folder to track.  
+2. Choose a note or folder to track. 
 3. Select the note type (**Daily**, **Weekly**, **Monthly**, or **Custom**).  
 4. Choose a tracking mode:
-   - **Latest** → only the most recently modified note  
-   - **Today** → today’s note (or this week/month if selected)  
-   - **All** → all notes inside the selected folder  
+   - **Latest** → only the most recently modified note
+   - **Today** → today’s note (or this week/month if selected)
+   - **All** → all notes inside the selected folder
 5. The progress bar will appear automatically in your sidebar.
 
 ---
