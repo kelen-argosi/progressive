@@ -6,7 +6,7 @@ The progress bar color dynamically changes based on completion percentage for qu
 
 ---
 
-## ⚖️ Difference from *progress-tracker*
+## Difference from *progress-tracker*
 
 While both *Progressive* and *progress-tracker* help visualize task completion, **Progressive** is a different approach:
 
@@ -22,18 +22,18 @@ In short, **Progressive** gives you *a global visual cue* of how complete your w
 
 ---
 
-## 🧭 Features
+## Features
 
-✅ Shows a progress bar in the **sidebar**, always visible.  
-📅 Supports **daily**, **weekly**, **monthly**, and **custom** note types.  
-🔍 Tracking modes: **latest note**, **today’s note**, **all notes in a folder** or a **custom note**.
-🎨 Progress bar color changes through 12 levels depending on completion, but also features Black and White and themed based visuals.
-🗂️ Works with both **single notes and entire folders**.  
-⚡ Automatically updates when notes are modified.  
+- Shows a progress bar in the **sidebar**, always visible.  
+- Supports **daily**, **weekly**, **monthly**, and **custom** note types.  
+- Tracking modes: **latest note**, **today’s note**, **all notes in a folder** or a **custom note**.
+- Progress bar color changes through 12 levels depending on completion, but also features Black and White and themed based visuals.
+- Works with both **single notes and entire folders**.  
+- Automatically updates when notes are modified.  
 
 ---
 
-## 🚀 How to use
+## How to use
 
 1. Go to **Settings → Progressive**.  
 2. Choose a note or folder to track.  
@@ -65,11 +65,11 @@ Then reload Obsidian and enable **Progressive** from the Community Plugins tab.
 
 ---
 
-## ❤️ Funding & Feedback
+## Funding & Feedback
 
 If you like **Progressive**, you can support its development by:
-- Giving feedback on GitHub  
-- Reporting bugs or feature requests  
+- Giving feedback on GitHub
+- Reporting bugs or feature requests
 - Sharing it with others in the Obsidian community
 - Funding : If you really want to donate, give money to a charity
 
