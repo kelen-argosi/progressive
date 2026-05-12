@@ -75,8 +75,8 @@ If you like **Progressive**, you can support its development by:
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 For the latest Progressive documentation and updates, visit:  
-👉 [https://github.com/kelen-argosi/progressive](https://github.com/kelen-argosi/progressive)
+[https://github.com/kelen-argosi/progressive](https://github.com/kelen-argosi/progressive)
 
