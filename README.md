@@ -46,7 +46,7 @@ In short, **Progressive** gives you *a global visual cue* of how complete your w
 
 ---
 
-## 📦 Manual installation
+## Manual installation
 
 To install manually, copy the following files into your vault:
 
