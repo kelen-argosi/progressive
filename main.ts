@@ -7,11 +7,11 @@ import {
 	TFolder,
 } from "obsidian";
 
-// --- Support alternative checkbox syntaxes ---
+// Support for alternative checkbox syntaxes
 const UNCHECKED_REGEX = /-\s*\[(?: |☐|❍|■|–|>|•|\*)?\]/gi;
 const CHECKED_REGEX   = /-\s*\[(?:x|X|✔|✓|🗹|☑|⊠|✅)?\]/gi;
 
-// --- Settings interface ---
+// Settings interface
 interface ProgressiveSettings {
 	notePath: string;
 	noteType: "daily" | "weekly" | "monthly" | "custom";
@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS: ProgressiveSettings = {
 	colorMode: "theme",
 };
 
-// --- Main Plugin Class ---
+// Main Plugin Class
 export default class ProgressivePlugin extends Plugin {
 	settings: ProgressiveSettings;
 	private progressBarContainer: HTMLElement | null = null;
@@ -36,7 +36,7 @@ export default class ProgressivePlugin extends Plugin {
 
 	async onload() {
 
-		// --- Load settings and add settings tab ---
+		// Load settings and add settings tab
 		await this.loadSettings();
 		this.addSettingTab(new ProgressiveSettingTab(this.app, this));
 
@@ -47,20 +47,20 @@ export default class ProgressivePlugin extends Plugin {
 			const leaf = fileExplorerLeaves[0];
 			const container = leaf.view.containerEl;
 
-			// --- Create progress bar container ---
+			// Progress bar container
 			this.progressBarContainer = document.createElement("div");
 			this.progressBarContainer.className = "progressive-container";
 
-			// --- Label ---
+			// Label
 			this.progressPercentLabel = document.createElement("span");
 			this.progressPercentLabel.className = "progressive-percent";
 			this.progressPercentLabel.textContent = "0%";
 
-			// --- Wrapper ---
+			// Wrapper
 			const wrapper = document.createElement("div");
 			wrapper.className = "progressive-wrapper";
 
-			// --- Fill ---
+			// Fill
 			this.progressBarFill = document.createElement("div");
 			this.progressBarFill.className = "progressive-bar";
 			this.progressBarFill.style.width = "0%";
@@ -70,16 +70,16 @@ export default class ProgressivePlugin extends Plugin {
 			this.progressBarContainer.appendChild(wrapper);
 			container.appendChild(this.progressBarContainer);
 
-			// --- Initial Update ---
+			// Initial Update
 			await this.updateProgressBar();
 
-			// --- File system event listeners ---
+			// File system event listeners
 			this.registerEvent(this.app.vault.on("modify", () => this.debouncedUpdate()));
 			this.registerEvent(this.app.vault.on("create", () => this.debouncedUpdate()));
 			this.registerEvent(this.app.vault.on("delete", () => this.debouncedUpdate()));
 			this.registerEvent(this.app.vault.on("rename", () => this.debouncedUpdate()));
 
-			// --- Periodic update for folders ---
+			// Periodic update for folders
 			this.registerInterval(
 				window.setInterval(() => this.updateProgressBar(), 10000)
 			);
@@ -199,7 +199,7 @@ export default class ProgressivePlugin extends Plugin {
 	}
 }
 
-// --- Settings Tab ---
+// Settings
 class ProgressiveSettingTab extends PluginSettingTab {
 	plugin: ProgressivePlugin;
 
